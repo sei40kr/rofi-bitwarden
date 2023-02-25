@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+basedir="$(cd "$(dirname "$0")" && pwd)"
+
+status="$(bw status --raw --nointeraction | jq -r '.status')"
+if [[ "$status" == 'unauthenticated' ]]; then
+	echo "The Bitwarden CLI is not authenticated. Please authenticate the Bitwarden CLI with 'bw login'" >&2
+	exit 1
+fi
+
+if [[ "$status" == 'locked' ]]; then
+	message='The vault is locked.'
+
+	while [[ "$session" == '' ]]; do
+		master_password="$(rofi -dmenu -p 'Master password' -mesg "$message" -password)"
+		if [[ -z "$master_password" ]]; then
+			exit
+		fi
+
+		session=$(bw unlock --raw --nointeraction "$master_password")
+		if [[ -z "$session" ]]; then
+			message='Invalid master password.'
+		fi
+	done
+fi
+
+BW_SESSION="$session" rofi -modes "bw:${basedir}/libexec/bitwarden.bash" -show bw -kb-custom-1 'Alt+u' -kb-custom-2 'Alt+p'
