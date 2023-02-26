@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-basedir="$(cd "$(dirname "$0")" && pwd)"
+basedir="$(cd "$(dirname "$0")/.." && pwd)"
 
 status="$(bw status --raw --nointeraction | jq -r '.status')"
 if [[ "$status" == 'unauthenticated' ]]; then
